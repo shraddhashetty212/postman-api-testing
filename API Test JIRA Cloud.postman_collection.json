@@ -1,0 +1,443 @@
+{
+	"info": {
+		"_postman_id": "d63f7a52-0b20-4010-8bf6-4ccab8a952f0",
+		"name": "API Test JIRA Cloud",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30951039"
+	},
+	"item": [
+		{
+			"name": "End to End API Testing",
+			"item": [
+				{
+					"name": "Create Issue as Story in existing Project",
+					"item": [
+						{
+							"name": "Get Projects",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();",
+											"console.log(response);",
+											"console.log(response.values);",
+											"",
+											"let projectDetails = response.values;",
+											"const projectSearch = projectDetails.map((item) => item.key);",
+											"console.log(projectSearch);",
+											"pm.collectionVariables.set('ProjectIDMap', projectDetails[projectSearch.indexOf('DP')].id);",
+											"pm.collectionVariables.set('ProjectKeyMap', projectDetails[projectSearch.indexOf('DP')].key);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{Jira Token}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "shraddhavikasshetty@gmail.com",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://shraddhashetty.atlassian.net/rest/api/3/project/search",
+									"protocol": "https",
+									"host": [
+										"shraddhashetty",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"project",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Issue Types for Project",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();",
+											"const issueTypes = response.map((value) => value.name);",
+											"console.log(issueTypes);",
+											"pm.collectionVariables.set('issueIDMap', response[issueTypes.indexOf(pm.variables.get('issueName'))].id);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{Jira Token}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "shraddhavikasshetty@gmail.com",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://shraddhashetty.atlassian.net/rest/api/3/issuetype/project?projectId={{ProjectIDMap}}",
+									"protocol": "https",
+									"host": [
+										"shraddhashetty",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issuetype",
+										"project"
+									],
+									"query": [
+										{
+											"key": "projectId",
+											"value": "{{ProjectIDMap}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Find users assignable to Project",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();",
+											"console.log(response);",
+											"const desiredValues = response.map(value => value.displayName);",
+											"console.log(desiredValues);",
+											"pm.collectionVariables.set('accountIDMap', response[desiredValues.indexOf('Shraddha Shetty')].accountId);",
+											"",
+											"//postman.setNextRequest(null); //to stop the execution at this point and not execute any test cases after this",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{Jira Token}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "shraddhavikasshetty@gmail.com",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://shraddhashetty.atlassian.net/rest/api/3/user/assignable/multiProjectSearch?projectKeys={{ProjectKeyMap}}",
+									"protocol": "https",
+									"host": [
+										"shraddhashetty",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"user",
+										"assignable",
+										"multiProjectSearch"
+									],
+									"query": [
+										{
+											"key": "projectKeys",
+											"value": "{{ProjectKeyMap}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Issue Type Story",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201 and a success\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.success;",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"console.log(response);",
+											"pm.collectionVariables.set('NewIssueKeyCreated', response.key);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var title = pm.collectionVariables.replaceIn(\"{{$randomPhrase}}\");",
+											"",
+											"pm.collectionVariables.set('issueTitle', title);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{Jira Token}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "shraddhavikasshetty@gmail.com",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fields\": {\n        \"issuetype\": {\n            \"id\": \"{{issueIDMap}}\"\n        },\n        \"project\": {\n            \"id\": \"{{ProjectIDMap}}\"\n        },\n        \"reporter\": {\n            \"id\": \"{{accountIDMap}}\"\n        },\n        \"summary\": \"{{issueTitle}}\"\n    },\n    \"update\": {}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://shraddhashetty.atlassian.net/rest/api/3/issue",
+									"protocol": "https",
+									"host": [
+										"shraddhashetty",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Issue Created",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();",
+											"console.log(response.fields.summary);",
+											"",
+											"pm.test(\"Summary match\", function () {",
+											"    pm.expect(response.fields.summary).to.eql(pm.collectionVariables.get('issueTitle'));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{Jira Token}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "shraddhavikasshetty@gmail.com",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://shraddhashetty.atlassian.net/rest/api/3/issue/{{NewIssueKeyCreated}}",
+									"protocol": "https",
+									"host": [
+										"shraddhashetty",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{NewIssueKeyCreated}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Jira Token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ProjectIDMap",
+			"value": ""
+		},
+		{
+			"key": "issueIDMap",
+			"value": ""
+		},
+		{
+			"key": "accountIDMap",
+			"value": ""
+		},
+		{
+			"key": "ProjectKeyMap",
+			"value": ""
+		},
+		{
+			"key": "issueTitle",
+			"value": ""
+		},
+		{
+			"key": "NewIssueKeyCreated",
+			"value": ""
+		},
+		{
+			"key": "issueName",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
